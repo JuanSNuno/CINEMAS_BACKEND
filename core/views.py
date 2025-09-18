@@ -16,10 +16,24 @@ class PeliculaListCreateView(generics.ListCreateAPIView):
     queryset = Pelicula.objects.all()
     serializer_class = PeliculaSerializer
 
+# Vista para operaciones detalladas de películas (obtener, actualizar, eliminar)
+class PeliculaDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Pelicula.objects.all()
+    serializer_class = PeliculaSerializer
+    lookup_field = 'pelicula_id'
+    lookup_url_kwarg = 'id'
+
 # Vista para listar y registrar usuarios
 class UsuarioListCreateView(generics.ListCreateAPIView):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
+
+# Vista para operaciones detalladas de usuarios
+class UsuarioDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Usuario.objects.all()
+    serializer_class = UsuarioSerializer
+    lookup_field = 'usuario_id'
+    lookup_url_kwarg = 'id'
 
 # Vista para listar y crear funciones
 class FuncionListCreateView(generics.ListCreateAPIView):
@@ -27,6 +41,17 @@ class FuncionListCreateView(generics.ListCreateAPIView):
     
     def get_serializer_class(self):
         if self.request.method == 'POST':
+            return CrearFuncionSerializer
+        return FuncionSerializer
+
+# Vista para operaciones detalladas de funciones
+class FuncionDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Funcion.objects.all().select_related('pelicula')
+    lookup_field = 'funcion_id'
+    lookup_url_kwarg = 'id'
+    
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'PATCH']:
             return CrearFuncionSerializer
         return FuncionSerializer
 
@@ -68,3 +93,14 @@ class ReservaListCreateView(generics.ListCreateAPIView):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+# Vista para operaciones detalladas de reservas
+class ReservaDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Reserva.objects.all().select_related('usuario', 'funcion__pelicula')
+    lookup_field = 'reserva_id'
+    lookup_url_kwarg = 'id'
+    
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            return CrearReservaSerializer
+        return ReservaSerializer
